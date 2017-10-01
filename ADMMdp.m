@@ -47,6 +47,7 @@ Z = zeros(n1,n2);
 I = speye(n1*n2);
 ata = A' * A;
 atb = A' * b;
+cga = ata + rho * I;
 
 for i=1:MAX_ITER
     % solve W
@@ -55,16 +56,15 @@ for i=1:MAX_ITER
     
     [U,S,V] = svd(Y);
     W = U * max(S - tau,0) * V';
-
     
     % Quasi-Newton's method
     [U,S,V] = svd(X);
     dPsi = U * dpsi(S) * V';
 
-    cga = ata + rho * I;
+
     cgb = atb - ata * X(:) - lambda * dPsi(:) + rho * (W(:) - X(:)) - Z(:);
     % dX = cga \ cgb;
-    [dX, flag] = pcg(cga, cgb);
+    [dX, ~] = pcg(cga, cgb);
     
     dX = reshape(dX, n1, n2);
     
@@ -74,7 +74,6 @@ for i=1:MAX_ITER
         break
     end
     X = X + dX;
-    
     Z = Z - rho * (W - X);
 end
 end
